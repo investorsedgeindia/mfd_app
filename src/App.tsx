@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
+import { AuthPortal } from './components/AuthPortal';
 import { InvestorDashboard } from './components/InvestorDashboard';
 import { ClientOnboarding } from './components/ClientOnboarding';
 import { DistributorHub } from './components/DistributorHub';
@@ -15,17 +16,43 @@ import {
   SAMPLE_SIPS,
   SAMPLE_TRANSACTIONS,
 } from './data/sampleData';
-import { ClientProfile, FolioHolding, SIPSchedule, TransactionRecord } from './types';
-import { ShieldCheck, Heart, Sparkles } from 'lucide-react';
+import {
+  AuthSession,
+  ClientProfile,
+  FolioHolding,
+  SIPSchedule,
+  TransactionRecord,
+} from './types';
+import { getStoredSession, saveStoredSession } from './services/authService';
+import { ShieldCheck, Lock, TrendingUp } from 'lucide-react';
 
 export default function App() {
+  const [authSession, setAuthSession] = useState<AuthSession | null>(() =>
+    getStoredSession()
+  );
+
   const [activeTab, setActiveTab] = useState<
     'investor' | 'onboarding' | 'distributor' | 'calculators'
   >('investor');
 
   const [distributor, setDistributor] = useState(INITIAL_DISTRIBUTOR);
   const [clients, setClients] = useState<ClientProfile[]>(SAMPLE_CLIENTS);
-  const [selectedClientId, setSelectedClientId] = useState<string>('cli-001');
+
+  // If logged in as client, default to their own clientId
+  const [selectedClientId, setSelectedClientId] = useState<string>(() => {
+    const initialSession = getStoredSession();
+    if (initialSession?.user.role === 'client' && initialSession.user.clientId) {
+      return initialSession.user.clientId;
+    }
+    return 'cli-001';
+  });
+
+  // Sync selectedClientId when authSession changes
+  useEffect(() => {
+    if (authSession?.user.role === 'client' && authSession.user.clientId) {
+      setSelectedClientId(authSession.user.clientId);
+    }
+  }, [authSession]);
 
   const [holdingsState, setHoldingsState] =
     useState<Record<string, FolioHolding[]>>(SAMPLE_HOLDINGS);
@@ -46,6 +73,25 @@ export default function App() {
   const currentTransactions = transactionsState[selectedClientId] || [];
 
   // Handlers
+  const handleLoginSuccess = (session: AuthSession, newClientCreated?: ClientProfile) => {
+    if (newClientCreated) {
+      setClients((prev) => [newClientCreated, ...prev]);
+      setHoldingsState((prev) => ({ ...prev, [newClientCreated.id]: [] }));
+      setSipsState((prev) => ({ ...prev, [newClientCreated.id]: [] }));
+      setTransactionsState((prev) => ({ ...prev, [newClientCreated.id]: [] }));
+      setSelectedClientId(newClientCreated.id);
+    } else if (session.user.role === 'client' && session.user.clientId) {
+      setSelectedClientId(session.user.clientId);
+    }
+    setAuthSession(session);
+    setActiveTab('investor');
+  };
+
+  const handleLogout = () => {
+    saveStoredSession(null);
+    setAuthSession(null);
+  };
+
   const handleClientCreated = (newClient: ClientProfile) => {
     setClients((prev) => [newClient, ...prev]);
     setSelectedClientId(newClient.id);
@@ -98,10 +144,54 @@ export default function App() {
     }
   };
 
+  // If user is not authenticated, show the secure Client & Distributor Login Portal
+  if (!authSession) {
+    return (
+      <div className="min-h-screen bg-gray-50 text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+        {/* Simple Regulatory Header */}
+        <header className="bg-slate-900 px-4 py-2 text-xs text-slate-300 border-b border-slate-800 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5" /> AMFI Registered MFD
+              </span>
+              <span className="text-slate-600">|</span>
+              <span>
+                ARN: <strong className="text-white font-mono">{distributor.arn}</strong>
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
+              <Lock className="w-3 h-3 text-emerald-400" />
+              <span>BSE StAR MF &amp; NSE NMF II Gateway</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Auth Portal View */}
+        <main className="flex-1 flex items-center justify-center">
+          <AuthPortal
+            distributor={distributor}
+            clients={clients}
+            onLoginSuccess={handleLoginSuccess}
+          />
+        </main>
+
+        {/* Clean Footer */}
+        <footer className="bg-white border-t border-gray-200 text-xs text-gray-500 py-4 text-center">
+          <p className="text-[11px] max-w-2xl mx-auto text-gray-500">
+            {distributor.firmName} • ARN-{distributor.arn.replace('ARN-', '')} • SEBI &amp; AMFI Regulated Mutual Fund Distribution Portal
+          </p>
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
-      {/* Top Main Navbar */}
+      {/* Top Main Navbar with Session Info & Logout */}
       <Navbar
+        session={authSession}
+        onLogout={handleLogout}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         distributor={distributor}
@@ -138,7 +228,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'distributor' && (
+        {activeTab === 'distributor' && authSession.user.role === 'distributor' && (
           <DistributorHub
             distributor={distributor}
             clients={clients}
@@ -209,3 +299,4 @@ export default function App() {
     </div>
   );
 }
+

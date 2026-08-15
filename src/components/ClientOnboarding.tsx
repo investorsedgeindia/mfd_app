@@ -21,7 +21,8 @@ import {
   Zap,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { ClientProfile, KycStatus, KraAgency, RiskProfileType, OnboardingFormState } from '../types';
+import { ClientProfile, KycStatus, KraAgency, RiskProfileType, OnboardingFormState, UserAccount } from '../types';
+import { getStoredUsers, saveStoredUsers } from '../services/authService';
 
 interface ClientOnboardingProps {
   onClientCreated: (newClient: ClientProfile) => void;
@@ -270,6 +271,30 @@ export const ClientOnboarding: React.FC<ClientOnboardingProps> = ({
         activeSipMonthly: 0,
       };
 
+      // Also register client in the Auth credentials store
+      const currentUsers = getStoredUsers();
+      const existingUserIdx = currentUsers.findIndex((u) => u.pan === newClient.pan);
+      const newAccount: UserAccount = {
+        id: 'usr_' + Date.now(),
+        name: newClient.name,
+        email: newClient.email,
+        phone: newClient.phone,
+        pan: newClient.pan,
+        role: 'client',
+        clientId: newClient.id,
+        createdAt: new Date().toISOString(),
+        password: 'Investor@123',
+        kycStatus: 'KYC_VALIDATED',
+        ucc: generatedUcc,
+      };
+
+      if (existingUserIdx >= 0) {
+        currentUsers[existingUserIdx] = { ...currentUsers[existingUserIdx], ...newAccount };
+      } else {
+        currentUsers.push(newAccount);
+      }
+      saveStoredUsers(currentUsers);
+
       setCreatedClient(newClient);
       onClientCreated(newClient);
 
@@ -397,6 +422,10 @@ export const ClientOnboarding: React.FC<ClientOnboardingProps> = ({
             <div className="flex justify-between">
               <span className="text-gray-500">Risk Profile:</span>
               <span className="text-blue-600 font-bold">{createdClient.riskProfile}</span>
+            </div>
+            <div className="flex justify-between pt-1 border-t border-gray-200">
+              <span className="text-emerald-700 font-semibold">Default Client Password:</span>
+              <span className="text-emerald-700 font-bold">Investor@123</span>
             </div>
           </div>
 

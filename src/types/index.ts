@@ -227,3 +227,24 @@ export interface DistributorDetails {
   totalInvestors: number;
   monthlySipBook: number;
 }
+
+export type UserRole = 'client' | 'distributor';
+
+export interface UserAccount {
+  id: string;
+  email: string;
+  pan: string;
+  phone: string;
+  name: string;
+  password: string;
+  role: UserRole;
+  clientId?: string; // Links to ClientProfile.id if role is 'client'
+  createdAt: string;
+}
+
+export interface AuthSession {
+  user: UserAccount;
+  clientProfile?: ClientProfile;
+  token: string;
+  loginTime: string;
+}

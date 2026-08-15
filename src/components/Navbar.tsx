@@ -10,11 +10,13 @@ import {
   FileSpreadsheet,
   Search,
   Sparkles,
-  ChevronDown,
+  LogOut,
 } from 'lucide-react';
-import { ClientProfile, DistributorDetails } from '../types';
+import { AuthSession, ClientProfile, DistributorDetails } from '../types';
 
 interface NavbarProps {
+  session: AuthSession;
+  onLogout: () => void;
   activeTab: 'investor' | 'onboarding' | 'distributor' | 'calculators';
   setActiveTab: (tab: 'investor' | 'onboarding' | 'distributor' | 'calculators') => void;
   distributor: DistributorDetails;
@@ -28,6 +30,8 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  session,
+  onLogout,
   activeTab,
   setActiveTab,
   distributor,
@@ -39,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenProposal,
   onOpenTransact,
 }) => {
+  const isClient = session.user.role === 'client';
   const currentClient = clients.find((c) => c.id === selectedClientId) || clients[0];
 
   return (
@@ -88,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   MFD<span className="text-blue-600">Edge</span>
                 </span>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                  India Suite
+                  {isClient ? 'Investor Portal' : 'Partner Hub'}
                 </span>
               </div>
               <p className="text-[11px] text-gray-500 truncate max-w-[200px] sm:max-w-none font-medium">
@@ -109,7 +114,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span>Client Portfolio</span>
+              <span>{isClient ? 'My Portfolio' : 'Client Portfolio'}</span>
             </button>
 
             <button
@@ -122,21 +127,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <UserCheck className="w-4 h-4" />
-              <span>Digital e-KYC Onboarding</span>
+              <span>{isClient ? 'e-KYC & Profile' : 'Digital e-KYC'}</span>
             </button>
 
-            <button
-              id="nav-tab-distributor"
-              onClick={() => setActiveTab('distributor')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                activeTab === 'distributor'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-gray-600 hover:text-slate-900 hover:bg-gray-200/60'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span>Distributor Hub</span>
-            </button>
+            {!isClient && (
+              <button
+                id="nav-tab-distributor"
+                onClick={() => setActiveTab('distributor')}
+                className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  activeTab === 'distributor'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-gray-600 hover:text-slate-900 hover:bg-gray-200/60'
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                <span>Distributor Hub</span>
+              </button>
+            )}
 
             <button
               id="nav-tab-calculators"
@@ -154,11 +161,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Action Area */}
           <div className="flex items-center gap-2.5">
-            {/* Investor Switcher (if on investor tab) */}
-            {activeTab === 'investor' && (
+            {/* Investor Switcher (Only for Distributor viewing client accounts) */}
+            {!isClient && activeTab === 'investor' && (
               <div className="relative group">
                 <label className="text-[10px] uppercase font-bold text-gray-500 block -mb-0.5">
-                  Viewing As:
+                  Client View:
                 </label>
                 <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 shadow-xs">
                   <User className="w-3.5 h-3.5 text-blue-600" />
@@ -191,6 +198,26 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span>Proposal PDF</span>
             </button>
+
+            {/* Logged in User Badge & Sign Out Button */}
+            <div className="flex items-center gap-2 pl-2 border-l border-gray-200">
+              <div className="hidden md:flex flex-col text-right">
+                <span className="text-xs font-bold text-slate-800 truncate max-w-[120px]">
+                  {session.user.name}
+                </span>
+                <span className="text-[10px] text-gray-500 font-mono">
+                  {isClient ? `PAN: ${session.user.pan}` : 'ARN: ' + distributor.arn}
+                </span>
+              </div>
+
+              <button
+                onClick={onLogout}
+                title="Sign Out"
+                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg border border-gray-200 transition"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -202,7 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeTab === 'investor' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            Client Portfolio
+            {isClient ? 'My Portfolio' : 'Client Portfolio'}
           </button>
           <button
             onClick={() => setActiveTab('onboarding')}
@@ -210,16 +237,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeTab === 'onboarding' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            Digital e-KYC
+            {isClient ? 'e-KYC & Profile' : 'Digital e-KYC'}
           </button>
-          <button
-            onClick={() => setActiveTab('distributor')}
-            className={`px-3 py-1.5 rounded-md whitespace-nowrap font-medium ${
-              activeTab === 'distributor' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            Distributor Hub
-          </button>
+          {!isClient && (
+            <button
+              onClick={() => setActiveTab('distributor')}
+              className={`px-3 py-1.5 rounded-md whitespace-nowrap font-medium ${
+                activeTab === 'distributor' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Distributor Hub
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('calculators')}
             className={`px-3 py-1.5 rounded-md whitespace-nowrap font-medium ${
@@ -233,3 +262,4 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+
