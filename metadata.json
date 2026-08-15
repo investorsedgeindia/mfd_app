@@ -1,0 +1,6 @@
+{
+  "name": "MFD Edge - Client Portal & KYC Onboarding Suite",
+  "description": "Indian Mutual Fund Distributor platform for customer investment viewing, digital KYC verification, RTA feed ingestion, and step-by-step technical execution playbook.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
