@@ -9,6 +9,7 @@ import { CasUploadModal } from './components/CasUploadModal';
 import { TransactModal } from './components/TransactModal';
 import { ProposalModal } from './components/ProposalModal';
 import { KraLookupModal } from './components/KraLookupModal';
+import { SupabaseConfigModal } from './components/SupabaseConfigModal';
 import {
   INITIAL_DISTRIBUTOR,
   SAMPLE_CLIENTS,
@@ -21,10 +22,20 @@ import {
   ClientProfile,
   FolioHolding,
   SIPSchedule,
+  SupabaseConfigStatus,
   TransactionRecord,
 } from './types';
 import { getStoredSession, saveStoredSession } from './services/authService';
-import { ShieldCheck, Lock, TrendingUp } from 'lucide-react';
+import {
+  fetchClients,
+  fetchDistributorDetails,
+  fetchHoldings,
+  fetchSips,
+  fetchTransactions,
+  saveHolding,
+} from './services/supabaseService';
+import { checkSupabaseConnection, getSupabaseConfig } from './lib/supabaseClient';
+import { ShieldCheck, Lock, Database } from 'lucide-react';
 
 export default function App() {
   const [authSession, setAuthSession] = useState<AuthSession | null>(() =>
@@ -47,6 +58,11 @@ export default function App() {
     return 'cli-001';
   });
 
+  // Supabase Connection Status State
+  const [supabaseStatus, setSupabaseStatus] = useState<SupabaseConfigStatus>(() =>
+    getSupabaseConfig()
+  );
+
   // Sync selectedClientId when authSession changes
   useEffect(() => {
     if (authSession?.user.role === 'client' && authSession.user.clientId) {
@@ -65,6 +81,77 @@ export default function App() {
   const [isCasUploadOpen, setIsCasUploadOpen] = useState(false);
   const [isProposalOpen, setIsProposalOpen] = useState(false);
   const [isTransactOpen, setIsTransactOpen] = useState(false);
+  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
+
+  // Load live data from Supabase (or local cache) on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initializeDatabaseData() {
+      try {
+        // 1. Check Supabase connection
+        const connStatus = await checkSupabaseConnection();
+        if (isMounted) setSupabaseStatus(connStatus);
+
+        // 2. Fetch clients
+        const fetchedClients = await fetchClients();
+        if (isMounted && fetchedClients.length > 0) {
+          setClients(fetchedClients);
+        }
+
+        // 3. Fetch distributor details
+        const dist = await fetchDistributorDetails();
+        if (isMounted && dist) {
+          setDistributor(dist);
+        }
+      } catch (err) {
+        console.warn('Initial Supabase sync notice:', err);
+      }
+    }
+
+    initializeDatabaseData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch holdings, SIPs, and transactions when selectedClientId changes
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadClientPortfolio() {
+      if (!selectedClientId) return;
+      try {
+        const [clientHoldings, clientSips, clientTxs] = await Promise.all([
+          fetchHoldings(selectedClientId),
+          fetchSips(selectedClientId),
+          fetchTransactions(selectedClientId),
+        ]);
+
+        if (isMounted) {
+          setHoldingsState((prev) => ({
+            ...prev,
+            [selectedClientId]: clientHoldings,
+          }));
+          setSipsState((prev) => ({
+            ...prev,
+            [selectedClientId]: clientSips,
+          }));
+          setTransactionsState((prev) => ({
+            ...prev,
+            [selectedClientId]: clientTxs,
+          }));
+        }
+      } catch (err) {
+        console.warn('Portfolio load note for client:', selectedClientId, err);
+      }
+    }
+
+    loadClientPortfolio();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedClientId]);
 
   const currentClient =
     clients.find((c) => c.id === selectedClientId) || clients[0];
@@ -103,10 +190,16 @@ export default function App() {
   const handleImportCasHoldings = (imported: FolioHolding[]) => {
     setHoldingsState((prev) => {
       const existing = prev[selectedClientId] || [];
+      const updated = [...existing, ...imported];
       return {
         ...prev,
-        [selectedClientId]: [...existing, ...imported],
+        [selectedClientId]: updated,
       };
+    });
+
+    // Asynchronously save imported holdings to Supabase
+    imported.forEach((h) => {
+      saveHolding(h).catch((err) => console.warn('Supabase CAS holding save note:', err));
     });
   };
 
@@ -160,9 +253,18 @@ export default function App() {
                 ARN: <strong className="text-white font-mono">{distributor.arn}</strong>
               </span>
             </div>
-            <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-              <Lock className="w-3 h-3 text-emerald-400" />
-              <span>BSE StAR MF &amp; NSE NMF II Gateway</span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsSupabaseModalOpen(true)}
+                className="text-[11px] text-emerald-300 hover:text-white flex items-center gap-1 bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 transition"
+              >
+                <Database className="w-3 h-3 text-emerald-400" />
+                <span>Supabase DB</span>
+              </button>
+              <div className="text-[11px] text-slate-400 hidden sm:flex items-center gap-1.5">
+                <Lock className="w-3 h-3 text-emerald-400" />
+                <span>BSE StAR MF &amp; NSE NMF II Gateway</span>
+              </div>
             </div>
           </div>
         </header>
@@ -175,6 +277,12 @@ export default function App() {
             onLoginSuccess={handleLoginSuccess}
           />
         </main>
+
+        {/* Supabase Config Modal */}
+        <SupabaseConfigModal
+          isOpen={isSupabaseModalOpen}
+          onClose={() => setIsSupabaseModalOpen(false)}
+        />
 
         {/* Clean Footer */}
         <footer className="bg-white border-t border-gray-200 text-xs text-gray-500 py-4 text-center">
@@ -202,6 +310,8 @@ export default function App() {
         onOpenCasUpload={() => setIsCasUploadOpen(true)}
         onOpenProposal={() => setIsProposalOpen(true)}
         onOpenTransact={() => setIsTransactOpen(true)}
+        onOpenSupabaseConfig={() => setIsSupabaseModalOpen(true)}
+        supabaseStatus={supabaseStatus}
       />
 
       {/* Main Content Area */}
@@ -245,6 +355,11 @@ export default function App() {
       </main>
 
       {/* Modals */}
+      <SupabaseConfigModal
+        isOpen={isSupabaseModalOpen}
+        onClose={() => setIsSupabaseModalOpen(false)}
+      />
+
       <CasUploadModal
         isOpen={isCasUploadOpen}
         onClose={() => setIsCasUploadOpen(false)}
@@ -280,9 +395,13 @@ export default function App() {
               <ShieldCheck className="w-4 h-4 text-blue-600" />
               <span>{distributor.firmName}</span>
               <span className="text-gray-300">|</span>
-              <span className="text-gray-600">ARN: <strong className="text-slate-900 font-mono">{distributor.arn}</strong></span>
+              <span className="text-gray-600">
+                ARN: <strong className="text-slate-900 font-mono">{distributor.arn}</strong>
+              </span>
               <span className="text-gray-300">|</span>
-              <span className="text-gray-600">EUIN: <strong className="text-slate-900 font-mono">{distributor.euin}</strong></span>
+              <span className="text-gray-600">
+                EUIN: <strong className="text-slate-900 font-mono">{distributor.euin}</strong>
+              </span>
             </div>
             <p className="text-[11px] text-gray-500 max-w-2xl leading-normal">
               Statutory Disclaimer: Mutual Fund investments are subject to market risks, read all scheme related documents carefully.
@@ -291,12 +410,15 @@ export default function App() {
           </div>
 
           <div className="text-[11px] text-gray-500 text-right">
-            <div>Exchange Routing: <strong className="text-slate-700">BSE StAR MF / NSE NMF II</strong></div>
-            <div className="text-blue-600 font-medium mt-0.5">SEBI &amp; AMFI Compliant Digital Architecture</div>
+            <div>
+              Exchange Routing: <strong className="text-slate-700">BSE StAR MF / NSE NMF II</strong>
+            </div>
+            <div className="text-blue-600 font-medium mt-0.5">
+              SEBI &amp; AMFI Compliant Digital Architecture
+            </div>
           </div>
         </div>
       </footer>
     </div>
   );
 }
-

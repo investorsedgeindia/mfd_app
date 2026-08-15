@@ -23,6 +23,7 @@ import {
 import confetti from 'canvas-confetti';
 import { ClientProfile, KycStatus, KraAgency, RiskProfileType, OnboardingFormState, UserAccount } from '../types';
 import { getStoredUsers, saveStoredUsers } from '../services/authService';
+import { saveClientProfile } from '../services/supabaseService';
 
 interface ClientOnboardingProps {
   onClientCreated: (newClient: ClientProfile) => void;
@@ -294,6 +295,11 @@ export const ClientOnboarding: React.FC<ClientOnboardingProps> = ({
         currentUsers.push(newAccount);
       }
       saveStoredUsers(currentUsers);
+
+      // Persist to Supabase Database (with local fallback)
+      saveClientProfile(newClient).catch((err) =>
+        console.warn('Supabase client profile save note:', err)
+      );
 
       setCreatedClient(newClient);
       onClientCreated(newClient);

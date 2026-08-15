@@ -239,6 +239,8 @@ export interface UserAccount {
   password: string;
   role: UserRole;
   clientId?: string; // Links to ClientProfile.id if role is 'client'
+  kycStatus?: string;
+  ucc?: string;
   createdAt: string;
 }
 
@@ -247,4 +249,44 @@ export interface AuthSession {
   clientProfile?: ClientProfile;
   token: string;
   loginTime: string;
+}
+
+export interface InvestorGoal {
+  id: string;
+  clientId: string;
+  goalName: string;
+  targetAmount: number;
+  targetDate: string;
+  currentAccumulated: number;
+  monthlySipAllocated?: number;
+  category: 'RETIREMENT' | 'CHILD_EDUCATION' | 'HOME_PURCHASE' | 'WEALTH_CREATION' | 'EMERGENCY_FUND' | 'OTHER';
+}
+
+export interface ClientDocument {
+  id: string;
+  clientId: string;
+  documentType: 'PAN_CARD' | 'AADHAAR' | 'CHEQUE' | 'IPV_PHOTO' | 'ESIGN_DOC' | 'CAS_PDF';
+  fileName: string;
+  fileUrl: string;
+  verificationStatus: 'VERIFIED' | 'PENDING' | 'REJECTED';
+  uploadedAt: string;
+}
+
+export interface CasUploadRecord {
+  id: string;
+  clientId: string;
+  fileName: string;
+  statementPeriod?: string;
+  foliosCount: number;
+  totalValuation: number;
+  importedAt: string;
+}
+
+export interface SupabaseConfigStatus {
+  isConfigured: boolean;
+  isConnected: boolean;
+  url?: string;
+  mode: 'SUPABASE_CLOUD' | 'LOCAL_OFFLINE';
+  lastChecked?: string;
+  error?: string;
 }

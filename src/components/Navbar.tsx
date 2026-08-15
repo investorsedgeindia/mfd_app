@@ -12,7 +12,8 @@ import {
   Sparkles,
   LogOut,
 } from 'lucide-react';
-import { AuthSession, ClientProfile, DistributorDetails } from '../types';
+import { Database } from 'lucide-react';
+import { AuthSession, ClientProfile, DistributorDetails, SupabaseConfigStatus } from '../types';
 
 interface NavbarProps {
   session: AuthSession;
@@ -27,6 +28,8 @@ interface NavbarProps {
   onOpenCasUpload: () => void;
   onOpenProposal: () => void;
   onOpenTransact: () => void;
+  onOpenSupabaseConfig?: () => void;
+  supabaseStatus?: SupabaseConfigStatus;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -42,6 +45,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCasUpload,
   onOpenProposal,
   onOpenTransact,
+  onOpenSupabaseConfig,
+  supabaseStatus,
 }) => {
   const isClient = session.user.role === 'client';
   const currentClient = clients.find((c) => c.id === selectedClientId) || clients[0];
@@ -64,6 +69,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
+          {onOpenSupabaseConfig && (
+            <button
+              onClick={onOpenSupabaseConfig}
+              className="flex items-center gap-1.5 text-emerald-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-0.5 rounded border border-slate-700 transition"
+              title="Supabase PostgreSQL Database Status & Schema"
+            >
+              <span className={`w-2 h-2 rounded-full ${supabaseStatus?.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <Database className="w-3 h-3 text-emerald-400" />
+              <span>{supabaseStatus?.isConnected ? 'Supabase Live' : 'Database (Supabase)'}</span>
+            </button>
+          )}
           <button
             onClick={onOpenKraLookup}
             className="flex items-center gap-1 text-sky-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-0.5 rounded border border-slate-700 transition"

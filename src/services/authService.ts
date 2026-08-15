@@ -1,5 +1,7 @@
 import { AuthSession, ClientProfile, UserAccount } from '../types';
 import { SAMPLE_CLIENTS } from '../data/sampleData';
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import { saveClientProfile } from './supabaseService';
 
 const USERS_STORAGE_KEY = 'mfd_users_db_v1';
 const SESSION_STORAGE_KEY = 'mfd_auth_session_v1';
@@ -135,7 +137,7 @@ export function loginWithCredentials(
   }
 
   const clientProfile = matchedUser.clientId
-    ? clientsList.find((c) => c.id === matchedUser.clientId)
+    ? clientsList.find((c) => c.id === matchedUser.clientId || c.pan === matchedUser.pan)
     : undefined;
 
   const session: AuthSession = {
@@ -180,7 +182,7 @@ export function loginWithOtp(
   }
 
   const clientProfile = matchedUser.clientId
-    ? clientsList.find((c) => c.id === matchedUser.clientId)
+    ? clientsList.find((c) => c.id === matchedUser.clientId || c.pan === matchedUser.pan)
     : undefined;
 
   const session: AuthSession = {
@@ -290,6 +292,32 @@ export function registerNewClientAccount(
   const updatedUsers = [...users, newUserAccount];
   saveStoredUsers(updatedUsers);
 
+  // Asynchronously save to Supabase
+  saveClientProfile(newClientProfile).catch((err) =>
+    console.warn('Async Supabase client registration notice:', err)
+  );
+
+  if (isSupabaseConfigured && supabase) {
+    (async () => {
+      try {
+        await supabase
+          .from('users_accounts')
+          .upsert({
+            id: newUserAccount.id,
+            email: newUserAccount.email,
+            pan: newUserAccount.pan,
+            phone: newUserAccount.phone,
+            name: newUserAccount.name,
+            password_hash: newUserAccount.password,
+            role: 'client',
+            client_id: newClientId,
+          });
+      } catch (e) {
+        console.warn('Supabase user_account sync note:', e);
+      }
+    })();
+  }
+
   const session: AuthSession = {
     user: newUserAccount,
     clientProfile: newClientProfile,
@@ -326,5 +354,20 @@ export function resetPassword(
 
   users[userIndex].password = newPassword;
   saveStoredUsers(users);
+
+  if (isSupabaseConfigured && supabase) {
+    (async () => {
+      try {
+        await supabase
+          .from('users_accounts')
+          .update({ password_hash: newPassword })
+          .eq('email', users[userIndex].email);
+      } catch (e) {
+        console.warn('Supabase password update note:', e);
+      }
+    })();
+  }
+
   return { success: true, message: 'Password reset successfully. You can now sign in.' };
 }
+

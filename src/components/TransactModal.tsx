@@ -11,6 +11,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { ClientProfile, FolioHolding, SIPSchedule, TransactionRecord } from '../types';
+import { saveHolding, saveSipSchedule, saveTransaction } from '../services/supabaseService';
 
 interface TransactModalProps {
   isOpen: boolean;
@@ -166,6 +167,15 @@ export const TransactModal: React.FC<TransactModalProps> = ({
         status: 'SETTLED',
         orderReference: `BSE_${transactType}_${Date.now()}`,
       };
+
+      // Asynchronously persist to Supabase Database
+      saveHolding(newHolding).catch((err) => console.warn('Supabase save holding note:', err));
+      if (newSip) {
+        saveSipSchedule(newSip).catch((err) => console.warn('Supabase save sip note:', err));
+      }
+      if (newTx) {
+        saveTransaction(newTx).catch((err) => console.warn('Supabase save tx note:', err));
+      }
 
       setTimeout(() => {
         onTransactionSuccess(newHolding, newSip, newTx);
