@@ -4,7 +4,6 @@ import {
   TrendingUp,
   UserCheck,
   LayoutDashboard,
-  Compass,
   Calculator,
   User,
   Building2,
@@ -16,8 +15,8 @@ import {
 import { ClientProfile, DistributorDetails } from '../types';
 
 interface NavbarProps {
-  activeTab: 'roadmap' | 'investor' | 'onboarding' | 'distributor' | 'calculators';
-  setActiveTab: (tab: 'roadmap' | 'investor' | 'onboarding' | 'distributor' | 'calculators') => void;
+  activeTab: 'investor' | 'onboarding' | 'distributor' | 'calculators';
+  setActiveTab: (tab: 'investor' | 'onboarding' | 'distributor' | 'calculators') => void;
   distributor: DistributorDetails;
   clients: ClientProfile[];
   selectedClientId: string;
@@ -79,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo & Identity */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('roadmap')}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('investor')}>
             <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm text-white">
               <TrendingUp className="w-5 h-5" />
             </div>
@@ -100,22 +99,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Nav Tabs */}
           <nav className="hidden lg:flex items-center gap-1 bg-gray-100/80 p-1 rounded-xl border border-gray-200">
-            <button
-              id="nav-tab-roadmap"
-              onClick={() => setActiveTab('roadmap')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                activeTab === 'roadmap'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-gray-600 hover:text-slate-900 hover:bg-gray-200/60'
-              }`}
-            >
-              <Compass className="w-4 h-4" />
-              <span>Action Roadmap</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${activeTab === 'roadmap' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'}`}>
-                Step-by-Step
-              </span>
-            </button>
-
             <button
               id="nav-tab-investor"
               onClick={() => setActiveTab('investor')}
@@ -213,14 +196,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile Sub-Navigation */}
         <div className="lg:hidden flex items-center justify-between overflow-x-auto py-2 border-t border-gray-200 gap-1 text-xs">
-          <button
-            onClick={() => setActiveTab('roadmap')}
-            className={`px-3 py-1.5 rounded-md whitespace-nowrap font-medium ${
-              activeTab === 'roadmap' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            Action Roadmap
-          </button>
           <button
             onClick={() => setActiveTab('investor')}
             className={`px-3 py-1.5 rounded-md whitespace-nowrap font-medium ${

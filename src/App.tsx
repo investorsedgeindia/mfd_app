@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Navbar } from './components/Navbar';
-import { ActionRoadmap } from './components/ActionRoadmap';
 import { InvestorDashboard } from './components/InvestorDashboard';
 import { ClientOnboarding } from './components/ClientOnboarding';
 import { DistributorHub } from './components/DistributorHub';
@@ -21,8 +20,8 @@ import { ShieldCheck, Heart, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
-    'roadmap' | 'investor' | 'onboarding' | 'distributor' | 'calculators'
-  >('roadmap');
+    'investor' | 'onboarding' | 'distributor' | 'calculators'
+  >('investor');
 
   const [distributor, setDistributor] = useState(INITIAL_DISTRIBUTOR);
   const [clients, setClients] = useState<ClientProfile[]>(SAMPLE_CLIENTS);
@@ -117,13 +116,6 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'roadmap' && (
-          <ActionRoadmap
-            onStartOnboardingDemo={() => setActiveTab('onboarding')}
-            onViewInvestorPortfolio={() => setActiveTab('investor')}
-          />
-        )}
-
         {activeTab === 'investor' && (
           <InvestorDashboard
             client={currentClient}
