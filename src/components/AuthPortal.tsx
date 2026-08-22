@@ -296,51 +296,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
             </div>
           </div>
 
-          {/* Quick Demo Credentials Card */}
-          <div className="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600" /> Demo Test Credentials
-              </span>
-              <span className="text-[10px] font-mono text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">
-                1-Click Populate
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('ABCPS1234K', 'Rajesh Sharma')}
-                className="p-2 bg-white hover:bg-blue-100/60 rounded-xl border border-blue-200 text-left transition shadow-2xs"
-              >
-                <div className="font-semibold text-slate-800">Rajesh Sharma</div>
-                <div className="text-[10px] text-gray-500 font-mono">PAN: ABCPS1234K</div>
-                <div className="text-[10px] text-blue-600 font-medium mt-0.5">Pass: Investor@123</div>
-              </button>
 
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('BHKPP8492L', 'Priya Patel')}
-                className="p-2 bg-white hover:bg-blue-100/60 rounded-xl border border-blue-200 text-left transition shadow-2xs"
-              >
-                <div className="font-semibold text-slate-800">Priya Patel</div>
-                <div className="text-[10px] text-gray-500 font-mono">PAN: BHKPP8492L</div>
-                <div className="text-[10px] text-blue-600 font-medium mt-0.5">Pass: Investor@123</div>
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                handleRoleTabChange('distributor');
-                setAuthMode('login');
-                setIdentifier('investorsedgeindia@gmail.com');
-                setPassword('Distributor@123');
-                setSuccessMsg('Distributor demo credentials populated (ARN-198420).');
-              }}
-              className="w-full text-center py-1.5 px-3 bg-white hover:bg-blue-100/60 text-blue-800 text-[11px] font-semibold rounded-lg border border-blue-200 transition"
-            >
-              Sign In as Distributor Admin (ARN-198420)
-            </button>
-          </div>
         </div>
 
         {/* Right Side: Interactive Login / Register Card */}
