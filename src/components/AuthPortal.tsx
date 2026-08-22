@@ -278,7 +278,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
               <div>
                 <h4 className="text-xs font-bold text-slate-900">SEBI &amp; AMFI Compliant</h4>
                 <p className="text-[11px] text-gray-500 mt-0.5">
-                  ARN-198420 | EUIN: E-428190 | Registered with all 44 Indian AMCs via CAMS &amp; KFintech.
+                  Registered with all 44 Indian AMCs via CAMS &amp; KFintech.
                 </p>
               </div>
             </div>

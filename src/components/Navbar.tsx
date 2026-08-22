@@ -106,9 +106,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Supabase PostgreSQL Database Status & Schema"
               >
                 <span
-                  className={`w-2 h-2 rounded-full ${
-                    supabaseStatus?.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
-                  }`}
+                  className={`w-2 h-2 rounded-full ${supabaseStatus?.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                    }`}
                 />
                 <Database className="w-3 h-3 text-emerald-400" />
                 <span>
@@ -166,11 +165,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="nav-tab-investor"
               onClick={() => setActiveTab('investor')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                activeTab === 'investor'
+              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === 'investor'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-gray-600 hover:text-slate-900 hover:bg-gray-200/60'
-              }`}
+                }`}
             >
               <LayoutDashboard className="w-4 h-4" />
               <span>{isClient ? 'My Portfolio' : 'Client Portfolio'}</span>
@@ -181,11 +179,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="nav-tab-onboarding"
                 onClick={() => setActiveTab('onboarding')}
-                className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                  activeTab === 'onboarding'
+                className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === 'onboarding'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-gray-600 hover:text-slate-900 hover:bg-gray-200/60'
-                }`}
+                  }`}
               >
                 <UserCheck className="w-4 h-4" />
                 <span>Digital e-KYC</span>
@@ -197,11 +194,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="nav-tab-distributor"
                 onClick={() => setActiveTab('distributor')}
-                className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                  activeTab === 'distributor'
+                className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === 'distributor'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-gray-600 hover:text-slate-900 hover:bg-gray-200/60'
-                }`}
+                  }`}
               >
                 <Building2 className="w-4 h-4" />
                 <span>Distributor Hub</span>
@@ -212,11 +208,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="nav-tab-calculators"
               onClick={() => setActiveTab('calculators')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                activeTab === 'calculators'
+              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === 'calculators'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-gray-600 hover:text-slate-900 hover:bg-gray-200/60'
-              }`}
+                }`}
             >
               <Calculator className="w-4 h-4" />
               <span>MF Tools</span>
@@ -318,9 +313,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="lg:hidden border-t border-gray-200 py-3 space-y-1">
             <button
               onClick={() => { setActiveTab('investor'); setMobileMenuOpen(false); }}
-              className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg ${
-                activeTab === 'investor' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg ${activeTab === 'investor' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
             >
               <LayoutDashboard className="w-4 h-4" />
               {isClient ? 'My Portfolio' : 'Client Portfolio'}
@@ -328,9 +322,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             {!isClient && (
               <button
                 onClick={() => { setActiveTab('onboarding'); setMobileMenuOpen(false); }}
-                className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg ${
-                  activeTab === 'onboarding' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg ${activeTab === 'onboarding' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <UserCheck className="w-4 h-4" />
                 Digital e-KYC
@@ -339,9 +332,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             {!isClient && (
               <button
                 onClick={() => { setActiveTab('distributor'); setMobileMenuOpen(false); }}
-                className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg ${
-                  activeTab === 'distributor' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg ${activeTab === 'distributor' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <Building2 className="w-4 h-4" />
                 Distributor Hub
@@ -349,9 +341,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
             <button
               onClick={() => { setActiveTab('calculators'); setMobileMenuOpen(false); }}
-              className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg ${
-                activeTab === 'calculators' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg ${activeTab === 'calculators' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
             >
               <Calculator className="w-4 h-4" />
               MF Tools

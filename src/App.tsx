@@ -36,7 +36,7 @@ import {
   saveHolding,
 } from './services/supabaseService';
 import { checkSupabaseConnection, getSupabaseConfig } from './lib/supabaseClient';
-import { ShieldCheck, Lock, Database } from 'lucide-react';
+import { ShieldCheck, Lock } from 'lucide-react';
 
 export default function App() {
   const [authSession, setAuthSession] = useState<AuthSession | null>(() =>
@@ -278,19 +278,8 @@ export default function App() {
               <span className="flex items-center gap-1 text-emerald-400 font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" /> AMFI Registered MFD
               </span>
-              <span className="text-slate-600">|</span>
-              <span>
-                ARN: <strong className="text-white font-mono">{distributor.arn}</strong>
-              </span>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsSupabaseModalOpen(true)}
-                className="text-[11px] text-emerald-300 hover:text-white flex items-center gap-1 bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 transition"
-              >
-                <Database className="w-3 h-3 text-emerald-400" />
-                <span>Supabase DB</span>
-              </button>
               <div className="text-[11px] text-slate-400 hidden sm:flex items-center gap-1.5">
                 <Lock className="w-3 h-3 text-emerald-400" />
                 <span>BSE StAR MF &amp; NSE NMF II Gateway</span>
@@ -308,16 +297,10 @@ export default function App() {
           />
         </main>
 
-        {/* Supabase Config Modal */}
-        <SupabaseConfigModal
-          isOpen={isSupabaseModalOpen}
-          onClose={() => setIsSupabaseModalOpen(false)}
-        />
-
         {/* Clean Footer */}
         <footer className="bg-white border-t border-gray-200 text-xs text-gray-500 py-4 text-center">
           <p className="text-[11px] max-w-2xl mx-auto text-gray-500">
-            {distributor.firmName} • ARN-{distributor.arn.replace('ARN-', '')} • SEBI &amp; AMFI Regulated Mutual Fund Distribution Portal
+            SEBI &amp; AMFI Regulated Mutual Fund Distribution Portal
           </p>
         </footer>
       </div>
