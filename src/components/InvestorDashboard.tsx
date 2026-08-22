@@ -7,16 +7,17 @@ import {
   ArrowUpRight,
   ShieldCheck,
   Building,
-  CreditCard,
   Download,
   PlusCircle,
   RefreshCw,
   Sparkles,
-  HelpCircle,
   FileText,
-  AlertCircle,
   ChevronRight,
-  Zap,
+  ArrowDownCircle,
+  Target,
+  Wallet,
+  Lightbulb,
+  BadgeIndianRupee,
 } from 'lucide-react';
 import {
   PieChart,
@@ -39,6 +40,8 @@ interface InvestorDashboardProps {
   onOpenTransact: () => void;
   onOpenCasUpload: () => void;
   onOpenProposal: () => void;
+  onOpenRedeem?: () => void;
+  isClient?: boolean;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -58,6 +61,8 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
   onOpenTransact,
   onOpenCasUpload,
   onOpenProposal,
+  onOpenRedeem,
+  isClient = false,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'holdings' | 'sips' | 'tax' | 'transactions'>('holdings');
   const [selectedHolding, setSelectedHolding] = useState<FolioHolding | null>(null);
@@ -130,18 +135,30 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={onOpenTransact}
-              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-3.5 py-2 rounded-xl shadow-xs transition"
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-3.5 py-2 rounded-xl shadow-xs transition active:scale-95"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Invest / Start SIP</span>
             </button>
-            <button
-              onClick={onOpenCasUpload}
-              className="flex items-center gap-1.5 bg-white hover:bg-gray-50 text-slate-700 font-medium text-xs px-3.5 py-2 rounded-xl border border-gray-300 shadow-xs transition"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Import CAS</span>
-            </button>
+            {isClient ? (
+              onOpenRedeem && (
+                <button
+                  onClick={onOpenRedeem}
+                  className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs px-3.5 py-2 rounded-xl shadow-xs transition active:scale-95"
+                >
+                  <ArrowDownCircle className="w-3.5 h-3.5" />
+                  <span>Withdraw / Redeem</span>
+                </button>
+              )
+            ) : (
+              <button
+                onClick={onOpenCasUpload}
+                className="flex items-center gap-1.5 bg-white hover:bg-gray-50 text-slate-700 font-medium text-xs px-3.5 py-2 rounded-xl border border-gray-300 shadow-xs transition"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Import CAS</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -283,39 +300,52 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
           </div>
         </div>
 
-        {/* Distributor Advice & Rebalancing Alert */}
+        {/* Advisory Card — client vs distributor version */}
         <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-blue-600" /> Distributor Portfolio Advisory &amp; Next Review
+                {isClient ? (
+                  <><Lightbulb className="w-4 h-4 text-blue-600" /> Your Portfolio Insights</>
+                ) : (
+                  <><Sparkles className="w-4 h-4 text-blue-600" /> Distributor Portfolio Advisory &amp; Next Review</>
+                )}
               </h2>
               <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-medium">
-                ARN-198420 Monitored
+                {isClient ? 'SEBI Compliant' : 'ARN-198420 Monitored'}
               </span>
             </div>
 
             <div className="space-y-3 text-xs">
               <div className="bg-blue-50/50 p-3.5 rounded-xl border border-blue-100 flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-bold">
-                  ✓
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                  <Target className="w-4 h-4" />
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-xs">Healthy Wealth Creation Trajectory</h4>
                   <p className="text-slate-700 text-[11px] mt-0.5 leading-relaxed">
-                    Portfolio is generating <strong>{overallXirr}% XIRR</strong> across Flexi Cap and Mid Cap holdings. Next monthly SIP of <strong>₹{(client.activeSipMonthly || 45000).toLocaleString('en-IN')}</strong> will execute on 5th of next month via HDFC Bank e-NACH mandate.
+                    {isClient ? (
+                      <>Your portfolio is generating <strong>{overallXirr}% annualized XIRR</strong>. Your next SIP of <strong>₹{(client.activeSipMonthly || 0).toLocaleString('en-IN')}</strong> will auto-debit from your linked bank account.
+                      </>
+                    ) : (
+                      <>Portfolio is generating <strong>{overallXirr}% XIRR</strong> across Flexi Cap and Mid Cap holdings. Next monthly SIP of <strong>₹{(client.activeSipMonthly || 45000).toLocaleString('en-IN')}</strong> will execute on 5th of next month via HDFC Bank e-NACH mandate.
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
 
               <div className="bg-amber-50/60 p-3.5 rounded-xl border border-amber-200 flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 font-bold">
-                  !
+                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                  <BadgeIndianRupee className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-amber-900 text-xs">Union Budget 2024 Tax Optimization Tip</h4>
+                  <h4 className="font-bold text-amber-900 text-xs">Union Budget 2024 — Tax Insight</h4>
                   <p className="text-amber-800/90 text-[11px] mt-0.5 leading-relaxed">
-                    Long Term Capital Gains (LTCG) above ₹1.25 Lakhs per financial year are taxed at 12.5%. You have an unrealized gain of ₹{totalReturns.toLocaleString('en-IN')}. Consider strategic tax harvesting.
+                    Long Term Capital Gains (LTCG) above ₹1.25 Lakhs/FY are taxed at 12.5%.
+                    {totalReturns > 0 && (
+                      <> You have an unrealized gain of <strong>₹{totalReturns.toLocaleString('en-IN')}</strong>. Consider strategic tax harvesting before redeeming.</>
+                    )}
                   </p>
                 </div>
               </div>
@@ -324,14 +354,18 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
 
           <div className="mt-4 pt-3 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
             <span className="text-[11px] text-gray-500">
-              Last RTA daily feed sync: Today, 06:30 AM IST (CAMS/KFintech)
+              {isClient
+                ? 'NAV updated daily by CAMS/KFintech. Portfolio values as of latest NAV.'
+                : 'Last RTA daily feed sync: Today, 06:30 AM IST (CAMS/KFintech)'}
             </span>
-            <button
-              onClick={onOpenProposal}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-            >
-              Generate Printable Portfolio Factsheet <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+            {!isClient && (
+              <button
+                onClick={onOpenProposal}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              >
+                Generate Printable Portfolio Factsheet <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -368,94 +402,138 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
         {/* Tab 1: Scheme Holdings Table */}
         {activeSubTab === 'holdings' && (
           <div className="p-4 overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50/80 text-gray-600 font-semibold uppercase tracking-wider text-[10px]">
-                  <th className="py-3 px-3">Scheme &amp; AMC</th>
-                  <th className="py-3 px-3">Folio Number</th>
-                  <th className="py-3 px-3 text-right">Units</th>
-                  <th className="py-3 px-3 text-right">Current NAV</th>
-                  <th className="py-3 px-3 text-right">Invested Value</th>
-                  <th className="py-3 px-3 text-right">Current Value</th>
-                  <th className="py-3 px-3 text-right">Returns (XIRR)</th>
-                  <th className="py-3 px-3 text-center">SIP Status</th>
-                  <th className="py-3 px-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-slate-700">
-                {holdings.map((holding) => (
-                  <tr key={holding.id} className="hover:bg-gray-50/60 transition">
-                    <td className="py-3 px-3">
-                      <div className="font-bold text-slate-900 text-xs max-w-xs">{holding.schemeName}</div>
-                      <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-0.5">
-                        <span className="text-blue-600 font-semibold">{holding.amcLogoText}</span>
-                        <span>•</span>
-                        <span>{holding.subCategory}</span>
-                        <span>•</span>
-                        <span
-                          className={`px-1.5 py-0.2 rounded text-[10px] font-medium ${
-                            holding.riskometer === 'VERY_HIGH'
-                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}
-                        >
-                          {holding.riskometer.replace('_', ' ')}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="py-3 px-3 font-mono text-gray-600 text-[11px]">
-                      {holding.folioNumber}
-                    </td>
-
-                    <td className="py-3 px-3 text-right font-mono text-gray-700">
-                      {holding.units.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                    </td>
-
-                    <td className="py-3 px-3 text-right font-mono">
-                      <div className="text-slate-900 font-semibold">₹{holding.currentNav.toFixed(2)}</div>
-                      <div className="text-[10px] text-gray-400">Avg: ₹{holding.avgPurchaseNav.toFixed(2)}</div>
-                    </td>
-
-                    <td className="py-3 px-3 text-right font-mono text-gray-700">
-                      ₹{holding.investedAmount.toLocaleString('en-IN')}
-                    </td>
-
-                    <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">
-                      ₹{holding.currentValue.toLocaleString('en-IN')}
-                    </td>
-
-                    <td className="py-3 px-3 text-right font-mono">
-                      <div className="text-emerald-600 font-bold">
-                        +₹{holding.returnsAmount.toLocaleString('en-IN')}
-                      </div>
-                      <div className="text-[10px] text-emerald-700 font-medium">
-                        {holding.returnsPercentage.toFixed(1)}% (XIRR: {holding.xirr}%)
-                      </div>
-                    </td>
-
-                    <td className="py-3 px-3 text-center">
-                      {holding.sipLinked ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">
-                          Active (₹{holding.sipAmount?.toLocaleString('en-IN')})
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-gray-400">Lumpsum Only</span>
-                      )}
-                    </td>
-
-                    <td className="py-3 px-3 text-right">
-                      <button
-                        onClick={onOpenTransact}
-                        className="text-xs bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 font-medium px-2.5 py-1 rounded-lg border border-blue-200 shadow-xs transition"
-                      >
-                        Invest More
-                      </button>
-                    </td>
+            {holdings.length === 0 ? (
+              /* ── Empty State ── */
+              <div className="text-center py-16 px-6">
+                <div className="w-20 h-20 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                  <Wallet className="w-9 h-9 text-blue-400" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">
+                  {isClient ? 'Start Your Investment Journey' : 'No Holdings Found'}
+                </h3>
+                <p className="text-sm text-gray-500 max-w-sm mx-auto mb-5 leading-relaxed">
+                  {isClient
+                    ? 'You have no mutual fund holdings yet. Start a SIP or make a lumpsum investment to begin growing your wealth.'
+                    : 'No holdings data available for this client. Import CAS or add a transaction.'}
+                </p>
+                <div className="flex flex-wrap gap-3 justify-center">
+                  <button
+                    onClick={onOpenTransact}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm transition"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    {isClient ? 'Start Investing' : 'Add Transaction'}
+                  </button>
+                  {!isClient && (
+                    <button
+                      onClick={onOpenCasUpload}
+                      className="flex items-center gap-2 bg-white hover:bg-gray-50 text-slate-700 font-semibold text-sm px-5 py-2.5 rounded-xl border border-gray-300 transition"
+                    >
+                      <Download className="w-4 h-4" /> Import CAS
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50/80 text-gray-600 font-semibold uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-3">Scheme &amp; AMC</th>
+                    <th className="py-3 px-3">Folio Number</th>
+                    <th className="py-3 px-3 text-right">Units</th>
+                    <th className="py-3 px-3 text-right">Current NAV</th>
+                    <th className="py-3 px-3 text-right">Invested Value</th>
+                    <th className="py-3 px-3 text-right">Current Value</th>
+                    <th className="py-3 px-3 text-right">Returns (XIRR)</th>
+                    <th className="py-3 px-3 text-center">SIP Status</th>
+                    <th className="py-3 px-3 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-slate-700">
+                  {holdings.map((holding) => (
+                    <tr key={holding.id} className="hover:bg-gray-50/60 transition">
+                      <td className="py-3 px-3">
+                        <div className="font-bold text-slate-900 text-xs max-w-xs">{holding.schemeName}</div>
+                        <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-0.5">
+                          <span className="text-blue-600 font-semibold">{holding.amcLogoText}</span>
+                          <span>•</span>
+                          <span>{holding.subCategory}</span>
+                          <span>•</span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                              holding.riskometer === 'VERY_HIGH'
+                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}
+                          >
+                            {holding.riskometer.replace('_', ' ')}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-3 font-mono text-gray-600 text-[11px]">
+                        {holding.folioNumber}
+                      </td>
+
+                      <td className="py-3 px-3 text-right font-mono text-gray-700">
+                        {holding.units.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                      </td>
+
+                      <td className="py-3 px-3 text-right font-mono">
+                        <div className="text-slate-900 font-semibold">₹{holding.currentNav.toFixed(2)}</div>
+                        <div className="text-[10px] text-gray-400">Avg: ₹{holding.avgPurchaseNav.toFixed(2)}</div>
+                      </td>
+
+                      <td className="py-3 px-3 text-right font-mono text-gray-700">
+                        ₹{holding.investedAmount.toLocaleString('en-IN')}
+                      </td>
+
+                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">
+                        ₹{holding.currentValue.toLocaleString('en-IN')}
+                      </td>
+
+                      <td className="py-3 px-3 text-right font-mono">
+                        <div className={`font-bold ${holding.returnsAmount >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {holding.returnsAmount >= 0 ? '+' : ''}₹{holding.returnsAmount.toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-[10px] text-emerald-700 font-medium">
+                          {holding.returnsPercentage.toFixed(1)}% (XIRR: {holding.xirr}%)
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-3 text-center">
+                        {holding.sipLinked ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">
+                            Active (₹{holding.sipAmount?.toLocaleString('en-IN')})
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-gray-400">Lumpsum Only</span>
+                        )}
+                      </td>
+
+                      <td className="py-3 px-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={onOpenTransact}
+                            className="text-[11px] bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 font-semibold px-2 py-1 rounded-lg border border-blue-200 shadow-sm transition"
+                          >
+                            + Invest
+                          </button>
+                          {isClient && onOpenRedeem && (
+                            <button
+                              onClick={onOpenRedeem}
+                              className="text-[11px] bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 font-semibold px-2 py-1 rounded-lg border border-rose-200 shadow-sm transition"
+                            >
+                              Redeem
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
 

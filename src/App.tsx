@@ -7,6 +7,7 @@ import { DistributorHub } from './components/DistributorHub';
 import { SipCalculators } from './components/SipCalculators';
 import { CasUploadModal } from './components/CasUploadModal';
 import { TransactModal } from './components/TransactModal';
+import { RedeemModal } from './components/RedeemModal';
 import { ProposalModal } from './components/ProposalModal';
 import { KraLookupModal } from './components/KraLookupModal';
 import { SupabaseConfigModal } from './components/SupabaseConfigModal';
@@ -81,6 +82,7 @@ export default function App() {
   const [isCasUploadOpen, setIsCasUploadOpen] = useState(false);
   const [isProposalOpen, setIsProposalOpen] = useState(false);
   const [isTransactOpen, setIsTransactOpen] = useState(false);
+  const [isRedeemOpen, setIsRedeemOpen] = useState(false);
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
 
   // Load live data from Supabase (or local cache) on mount
@@ -237,6 +239,34 @@ export default function App() {
     }
   };
 
+  const handleRedemptionSuccess = (
+    updatedHolding: FolioHolding | null,
+    newTx: TransactionRecord
+  ) => {
+    setHoldingsState((prev) => {
+      const existing = prev[selectedClientId] || [];
+      let updated: FolioHolding[];
+      if (updatedHolding === null) {
+        // Full redemption — remove the holding that was redeemed
+        updated = existing.filter((h) => h.id !== newTx.folioNumber &&
+          // fallback: remove by matching folioNumber
+          !(h.folioNumber === newTx.folioNumber)
+        );
+      } else {
+        // Partial — replace with updated holding
+        updated = existing.map((h) =>
+          h.folioNumber === updatedHolding.folioNumber ? updatedHolding : h
+        );
+      }
+      return { ...prev, [selectedClientId]: updated };
+    });
+
+    setTransactionsState((prev) => {
+      const existing = prev[selectedClientId] || [];
+      return { ...prev, [selectedClientId]: [newTx, ...existing] };
+    });
+  };
+
   // If user is not authenticated, show the secure Client & Distributor Login Portal
   if (!authSession) {
     return (
@@ -310,6 +340,7 @@ export default function App() {
         onOpenCasUpload={() => setIsCasUploadOpen(true)}
         onOpenProposal={() => setIsProposalOpen(true)}
         onOpenTransact={() => setIsTransactOpen(true)}
+        onOpenRedeem={() => setIsRedeemOpen(true)}
         onOpenSupabaseConfig={() => setIsSupabaseModalOpen(true)}
         supabaseStatus={supabaseStatus}
       />
@@ -325,6 +356,8 @@ export default function App() {
             onOpenTransact={() => setIsTransactOpen(true)}
             onOpenCasUpload={() => setIsCasUploadOpen(true)}
             onOpenProposal={() => setIsProposalOpen(true)}
+            onOpenRedeem={() => setIsRedeemOpen(true)}
+            isClient={authSession.user.role === 'client'}
           />
         )}
 
@@ -372,6 +405,14 @@ export default function App() {
         onClose={() => setIsTransactOpen(false)}
         client={currentClient}
         onTransactionSuccess={handleTransactionSuccess}
+      />
+
+      <RedeemModal
+        isOpen={isRedeemOpen}
+        onClose={() => setIsRedeemOpen(false)}
+        client={currentClient}
+        holdings={currentHoldings}
+        onRedemptionSuccess={handleRedemptionSuccess}
       />
 
       <ProposalModal
